@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { Breadcrumbs } from '@/components/common/Breadcrumbs';
 
 export function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -38,7 +37,6 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
         <Sidebar />
         <main className="flex-1 overflow-auto">
           <div className="p-4 lg:p-6">
-            <Breadcrumbs />
             {children}
           </div>
         </main>

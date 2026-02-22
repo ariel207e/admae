@@ -19,6 +19,12 @@ import {
   Eye,
   Settings,
   X,
+  FileStack,
+  Clock,
+  FileSearch,
+  Files,
+  History,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -48,7 +54,20 @@ const menuItems = [
     title: 'Documentos',
     items: [
       { icon: FileText, label: 'Mis Documentos', href: '/documentos/misdocumentos' },
+      { icon: Folder, label: 'Mis Archivos', href: '/documentos/misarchivos' },
       { icon: FileText, label: 'Crear', href: '/documentos/crear' },
+    ],
+  },
+  {
+    title: 'Reportes',
+    items: [
+      { icon: Clock, label: 'Pendientes Oficina', href: '/reportes/pendientes-oficina' },
+      { icon: Inbox, label: 'Correspondencia recibida', href: '/reportes/correspondencia-recibida' },
+      { icon: Send, label: 'Correspondencia enviada', href: '/reportes/correspondencia-enviada' },
+      { icon: FileSearch, label: 'Personalizado', href: '/reportes/personalizado' },
+      { icon: Files, label: 'Documentos', href: '/reportes/documentos' },
+      { icon: History, label: 'Historial documentos', href: '/reportes/historial-documentos' },
+      { icon: BookOpen, label: 'Libro SE', href: '/reportes/libro-se' },
     ],
   },
   {
@@ -57,7 +76,7 @@ const menuItems = [
       { icon: FileText, label: 'Libro de Registros', href: '/libro-de-registros' },
       { icon: Mail, label: 'Ventanilla', href: '/ventanilla/registro' },
       { icon: Eye, label: 'Seguimiento', href: '/seguimiento' },
-      { icon: BarChart3, label: 'Reportes', href: '/reportes/selector' },
+      { icon: FileStack, label: 'Hoja de Ruta', href: '/hoja-de-ruta' },
     ],
   },
 ];
