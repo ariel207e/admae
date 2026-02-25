@@ -10,7 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
@@ -27,11 +34,20 @@ import {
   ExternalLink,
   ChevronRight,
   MoreVertical,
-  Calendar
+  Calendar,
+  FolderPlus,
+  Plus,
+  Edit,
+  Trash2,
+  Settings2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 interface ArchivedDocument {
   id: number;
@@ -114,8 +130,74 @@ const mockFolders: Folder[] = [
 ];
 
 export default function ArchivadosPage() {
+  const [folders, setFolders] = useState<Folder[]>(mockFolders);
   const [selectedFolder, setSelectedFolder] = useState<Folder | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estado para creación/edición de carpetas
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<Folder | null>(null);
+  const [folderForm, setFolderForm] = useState({ 
+    nombre: '', 
+    descripcion: '', 
+    color: 'bg-blue-500' 
+  });
+
+  const handleOpenCreateModal = () => {
+    setEditingFolder(null);
+    setFolderForm({ nombre: '', descripcion: '', color: 'bg-blue-500' });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (folder: Folder, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingFolder(folder);
+    setFolderForm({ 
+      nombre: folder.nombre, 
+      descripcion: folder.descripcion, 
+      color: folder.color 
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveFolder = () => {
+    if (!folderForm.nombre.trim()) {
+      toast.error('El nombre de la carpeta es obligatorio');
+      return;
+    }
+
+    if (editingFolder) {
+      // Editar
+      setFolders(folders.map(f => f.id === editingFolder.id ? {
+        ...f,
+        nombre: folderForm.nombre,
+        descripcion: folderForm.descripcion,
+        color: folderForm.color
+      } : f));
+      toast.success('Carpeta actualizada correctamente');
+    } else {
+      // Crear
+      const newFolder: Folder = {
+        id: Date.now(),
+        nombre: folderForm.nombre,
+        descripcion: folderForm.descripcion,
+        totalDocumentos: 0,
+        color: folderForm.color,
+        documentos: []
+      };
+      setFolders([newFolder, ...folders]);
+      toast.success('Carpeta creada correctamente');
+    }
+    setIsModalOpen(false);
+  };
+
+  const handleDeleteFolder = (folderId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('¿Está seguro de que desea eliminar esta carpeta?')) {
+      setFolders(folders.filter(f => f.id !== folderId));
+      toast.success('Carpeta eliminada correctamente');
+    }
+  };
 
   const handleUnarchive = (docId: number) => {
     if (confirm('¿Está seguro de que desea desarchivar este documento? El documento retornará a la bandeja de Pendientes.')) {
@@ -125,7 +207,7 @@ export default function ArchivadosPage() {
     }
   };
 
-  const filteredFolders = mockFolders.filter(folder =>
+  const filteredFolders = folders.filter(folder =>
     folder.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -136,14 +218,20 @@ export default function ArchivadosPage() {
           <h1 className="text-3xl font-bold tracking-tight">Archivo de Documentos</h1>
           <p className="text-muted-foreground mt-1 text-sm lg:text-base">Consulta y gestiona los documentos archivados en carpetas organizadas.</p>
         </div>
-        <div className="relative w-full md:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar carpeta..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar carpeta..."
+              className="pl-9"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button onClick={handleOpenCreateModal} className="whitespace-nowrap">
+            <FolderPlus className="h-4 w-4 mr-2" />
+            Nueva Carpeta
+          </Button>
         </div>
       </div>
 
@@ -161,8 +249,30 @@ export default function ArchivadosPage() {
                 <div className={`p-2 rounded-lg ${folder.color} bg-opacity-10`}>
                   <FolderArchive className={`h-6 w-6 ${folder.color.replace('bg-', 'text-')}`} />
                 </div>
-                <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded">
-                  {folder.totalDocumentos} Docs
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground uppercase bg-muted px-2 py-0.5 rounded">
+                    {folder.totalDocumentos} Docs
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                      <Button variant="ghost" size="icon" className="h-7 w-7">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleOpenEditModal(folder, e)}>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        className="text-destructive focus:text-destructive"
+                        onClick={(e) => handleDeleteFolder(folder.id, e)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Eliminar
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <h3 className="font-bold text-lg leading-snug group-hover:text-primary transition-colors">
@@ -258,6 +368,74 @@ export default function ArchivadosPage() {
               Cerrar
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal for Creating/Editing Folder */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingFolder ? 'Editar Carpeta' : 'Crear Nueva Carpeta'}</DialogTitle>
+            <DialogDescription>
+              {editingFolder 
+                ? 'Modifica los detalles de la carpeta seleccionada.' 
+                : 'Crea una nueva carpeta para organizar tus documentos archivados.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                value={folderForm.nombre}
+                onChange={(e) => setFolderForm({ ...folderForm, nombre: e.target.value })}
+                placeholder="Nombre de la carpeta"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                value={folderForm.descripcion}
+                onChange={(e) => setFolderForm({ ...folderForm, descripcion: e.target.value })}
+                placeholder="Breve descripción..."
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label>Color</Label>
+              <div className="flex gap-2">
+                {[
+                  'bg-blue-500', 
+                  'bg-amber-500', 
+                  'bg-purple-500', 
+                  'bg-emerald-500', 
+                  'bg-rose-500', 
+                  'bg-slate-500',
+                  'bg-indigo-500',
+                  'bg-orange-500'
+                ].map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={cn(
+                      "w-6 h-6 rounded-full border-2 transition-all",
+                      color,
+                      folderForm.color === color ? "border-primary scale-110 ring-2 ring-primary/20" : "border-transparent hover:scale-105"
+                    )}
+                    onClick={() => setFolderForm({ ...folderForm, color })}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveFolder}>
+              {editingFolder ? 'Guardar Cambios' : 'Crear Carpeta'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

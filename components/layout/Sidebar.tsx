@@ -36,7 +36,7 @@ const menuItems = [
       { icon: Users, label: 'Usuarios', href: '/admin/usuarios' },
       { icon: Building2, label: 'Oficinas', href: '/admin/oficinas' },
       { icon: FileText, label: 'Entidades', href: '/admin/entidades' },
-      { icon: Tags, label: 'Tipos', href: '/admin/tipos' },
+      { icon: Tags, label: 'Documentos', href: '/admin/documentos' },
     ],
   },
   {
@@ -46,7 +46,6 @@ const menuItems = [
       { icon: CheckSquare, label: 'Pendientes', href: '/bandeja/pendientes' },
       { icon: Send, label: 'Salida', href: '/bandeja/salida' },
       { icon: Archive, label: 'Archivo', href: '/bandeja/archivo' },
-      { icon: Folder, label: 'Carpetas', href: '/bandeja/carpetas' },
       { icon: Eye, label: 'Agrupados', href: '/bandeja/agrupados' },
     ],
   },
@@ -99,7 +98,7 @@ export function Sidebar() {
       <aside
         className={cn(
           'fixed left-0 top-16 bottom-0 z-40 bg-sidebar border-r border-sidebar-border overflow-y-auto transition-all duration-300 ease-in-out',
-          'lg:relative lg:top-0 lg:translate-x-0',
+          'lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           isCollapsed ? 'w-20 lg:w-20' : 'w-64 lg:w-64'
         )}

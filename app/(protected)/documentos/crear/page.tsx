@@ -43,7 +43,6 @@ export default function CrearPage() {
 
   const handleRecipientSelect = (recipients: Recipient[]) => {
     setSelectedRecipients(recipients);
-    // Auto-fill the first recipient's info
     if (recipients.length > 0) {
       setFormData((prev) => ({
         ...prev,
@@ -64,64 +63,88 @@ export default function CrearPage() {
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSwitchChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      conHojaDeRuta: checked,
-    }));
+    setFormData((prev) => ({ ...prev, conHojaDeRuta: checked }));
   };
 
   const handleGenerateDocument = () => {
     console.log('[v0] Form submitted:', formData, 'Recipients:', selectedRecipients);
-    // TODO: Implement document generation logic
     alert('Documento generado (ver consola para detalles)');
   };
 
-  return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-display mb-2">Crear Documento</h1>
+  const handleClear = () => {
+    setFormData({
+      documentType: '',
+      process: '',
+      destinatario: '',
+      cargoDestinatario: '',
+      via: '',
+      cargoVia: '',
+      referencia: '',
+      adjuntos: 0,
+      hojas: 0,
+      conHojaDeRuta: false,
+    });
+    setSelectedRecipients([]);
+  };
 
-      {/* Section 1: Document Classification */}
-      <Card className="p-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Clasificación del Documento</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Selecciona el tipo de documento y el proceso asociado
+  const isValid =
+    !!formData.documentType &&
+    !!formData.process &&
+    !!formData.destinatario &&
+    !!formData.referencia;
+
+  return (
+    <div className="space-y-4">
+
+      {/* Header: Título + Tipo de Documento */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <h1 className="text-2xl font-display leading-tight">Crear Documento</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Remitente: <span className="font-medium text-foreground">{user?.name || 'Usuario'}</span>
+            {user?.role && <span className="ml-1 text-muted-foreground">— {user.role}</span>}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="documentType">Tipo de Documento *</Label>
-            <Select value={formData.documentType} onValueChange={(value) =>
-              handleSelectChange('documentType', value)
-            }>
-              <SelectTrigger id="documentType">
-                <SelectValue placeholder="Selecciona un tipo..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="nota">Nota</SelectItem>
-                <SelectItem value="informe">Informe</SelectItem>
-                <SelectItem value="carta">Carta</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              💡 Tipo base del documento a generar
-            </p>
-          </div>
+        <div className="w-48 space-y-1">
+          <Label htmlFor="documentType" className="text-xs text-muted-foreground">Tipo de Documento *</Label>
+          <Select
+            value={formData.documentType}
+            onValueChange={(value) => handleSelectChange('documentType', value)}
+          >
+            <SelectTrigger id="documentType" className="h-9 text-sm">
+              <SelectValue placeholder="Selecciona tipo..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="nota">Nota</SelectItem>
+              <SelectItem value="informe">Informe</SelectItem>
+              <SelectItem value="carta">Carta</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="process">Proceso *</Label>
-            <Select value={formData.process} onValueChange={(value) =>
-              handleSelectChange('process', value)
-            }>
-              <SelectTrigger id="process">
+      {/* Cards en fila */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+
+        {/* Card 1: Proceso + Destinatario + Vía */}
+        <Card className="p-4 space-y-3">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Destinatario y Proceso
+          </h2>
+
+          {/* Proceso */}
+          <div className="space-y-1.5">
+            <Label htmlFor="process" className="text-xs">Proceso *</Label>
+            <Select
+              value={formData.process}
+              onValueChange={(value) => handleSelectChange('process', value)}
+            >
+              <SelectTrigger id="process" className="h-8 text-sm">
                 <SelectValue placeholder="Selecciona un proceso..." />
               </SelectTrigger>
               <SelectContent>
@@ -131,175 +154,106 @@ export default function CrearPage() {
                 <SelectItem value="instructivo">Instructivo</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
-              💡 Contexto o flujo del documento
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Section 2: Recipient Information */}
-      <Card className="p-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Información del Destinatario</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Completa los datos del destinatario del documento
-          </p>
-        </div>
-
-        {/* Suggested Recipients */}
-        <div className="mb-4 p-4 bg-muted/50 rounded-lg border border-border/50">
-          <div className="flex items-center justify-between mb-3">
-            <Label htmlFor="suggestedRecipients" className="text-sm font-medium">
-              Destinatarios Sugeridos
-            </Label>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsModalOpen(true)}
-              className="text-xs h-8"
-            >
-              + Buscar Destinatarios
-            </Button>
           </div>
 
-          {selectedRecipients.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {selectedRecipients.map((recipient) => (
-                <div
-                  key={recipient.id}
-                  className="bg-primary/20 text-primary text-xs px-2.5 py-1 rounded-full flex items-center gap-2 cursor-pointer hover:bg-primary/30 transition-colors"
-                  onClick={() => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      destinatario: recipient.nombre,
-                      cargoDestinatario: recipient.cargo,
-                    }));
-                  }}
-                >
-                  <span>{recipient.nombre}</span>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedRecipients(
-                        selectedRecipients.filter((r) => r.id !== recipient.id)
-                      );
-                    }}
-                    className="hover:opacity-70"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+          {/* Destinatario: búsqueda + chips */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="destinatario" className="text-xs">Destinatario *</Label>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="text-xs text-primary hover:underline"
+              >
+                + Buscar
+              </button>
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Aún no hay destinatarios seleccionados. Haz clic en "Buscar Destinatarios"
-            </p>
-          )}
-        </div>
 
-        {/* Recipient Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="space-y-2">
-            <Label htmlFor="destinatario">Nombre del Destinatario *</Label>
-            <Input
-              id="destinatario"
-              name="destinatario"
-              placeholder="Ej: Juan Carlos García"
-              value={formData.destinatario}
-              onChange={handleInputChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Se auto-completa al seleccionar de la lista
-            </p>
+            {selectedRecipients.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-1">
+                {selectedRecipients.map((recipient) => (
+                  <div
+                    key={recipient.id}
+                    className="bg-primary/15 text-primary text-xs px-2 py-0.5 rounded-full flex items-center gap-1.5 cursor-pointer hover:bg-primary/25 transition-colors"
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        destinatario: recipient.nombre,
+                        cargoDestinatario: recipient.cargo,
+                      }))
+                    }
+                  >
+                    <span>{recipient.nombre}</span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedRecipients(selectedRecipients.filter((r) => r.id !== recipient.id));
+                      }}
+                      className="hover:opacity-70 leading-none"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                id="destinatario"
+                name="destinatario"
+                placeholder="Nombre"
+                value={formData.destinatario}
+                onChange={handleInputChange}
+                className="h-8 text-sm"
+              />
+              <Input
+                id="cargoDestinatario"
+                name="cargoDestinatario"
+                placeholder="Cargo"
+                value={formData.cargoDestinatario}
+                onChange={handleInputChange}
+                className="h-8 text-sm"
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="cargoDestinatario">Cargo del Destinatario *</Label>
-            <Input
-              id="cargoDestinatario"
-              name="cargoDestinatario"
-              placeholder="Ej: Gerente de Adquisiciones"
-              value={formData.cargoDestinatario}
-              onChange={handleInputChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Se auto-completa al seleccionar de la lista
-            </p>
+          {/* Vía (opcional) */}
+          <div className="space-y-1.5">
+            <Label htmlFor="via" className="text-xs">
+              Vía <span className="text-muted-foreground font-normal">(opcional)</span>
+            </Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                id="via"
+                name="via"
+                placeholder="Nombre vía"
+                value={formData.via}
+                onChange={handleInputChange}
+                className="h-8 text-sm"
+              />
+              <Input
+                id="cargoVia"
+                name="cargoVia"
+                placeholder="Cargo vía"
+                value={formData.cargoVia}
+                onChange={handleInputChange}
+                className="h-8 text-sm"
+              />
+            </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Optional Via Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="via">Vía (Opcional)</Label>
-            <Input
-              id="via"
-              name="via"
-              placeholder="Ej: Dirección General"
-              value={formData.via}
-              onChange={handleInputChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Persona o departamento por el que pasa el documento
-            </p>
-          </div>
+        {/* Card 2: Referencia + Adjuntos + Hojas */}
+        <Card className="p-4 space-y-3">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+            Contenido del Documento
+          </h2>
 
-          <div className="space-y-2">
-            <Label htmlFor="cargoVia">Cargo de la Vía (Opcional)</Label>
-            <Input
-              id="cargoVia"
-              name="cargoVia"
-              placeholder="Ej: Director General"
-              value={formData.cargoVia}
-              onChange={handleInputChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Dejar vacío si no aplica
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Section 3: Sender Information (Read-only) */}
-      <Card className="p-6 bg-muted/50 border-dashed">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Información del Remitente</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Datos del usuario actual (no editable)
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Nombre</Label>
-            <p className="text-sm font-medium mt-1">
-              {user?.name || 'Usuario'}
-            </p>
-          </div>
-          <div>
-            <Label className="text-xs font-medium text-muted-foreground">Cargo</Label>
-            <p className="text-sm font-medium mt-1">
-              {user?.role || 'Sin asignar'}
-            </p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Section 4: Reference & Details */}
-      <Card className="p-6">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">Referencia y Detalles</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Información adicional del documento
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="referencia">Referencia *</Label>
+          {/* Referencia */}
+          <div className="space-y-1.5">
+            <Label htmlFor="referencia" className="text-xs">Referencia / Asunto *</Label>
             <Textarea
               id="referencia"
               name="referencia"
@@ -307,15 +261,14 @@ export default function CrearPage() {
               value={formData.referencia}
               onChange={handleInputChange}
               rows={4}
+              className="text-sm resize-none"
             />
-            <p className="text-xs text-muted-foreground">
-              Breve descripción o asunto del documento
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="adjuntos">Número de Adjuntos</Label>
+          {/* Adjuntos + Hojas */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="adjuntos" className="text-xs">Nº Adjuntos</Label>
               <Input
                 id="adjuntos"
                 name="adjuntos"
@@ -323,14 +276,11 @@ export default function CrearPage() {
                 min="0"
                 value={formData.adjuntos}
                 onChange={handleInputChange}
+                className="h-8 text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Documentos anexados (por defecto: 0)
-              </p>
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="hojas">Número de Hojas</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="hojas" className="text-xs">Nº Hojas</Label>
               <Input
                 id="hojas"
                 name="hojas"
@@ -338,72 +288,48 @@ export default function CrearPage() {
                 min="0"
                 value={formData.hojas}
                 onChange={handleInputChange}
+                className="h-8 text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Hojas del documento (por defecto: 0)
-              </p>
             </div>
           </div>
-        </div>
-      </Card>
 
-      {/* Section 5: Actions */}
-      <Card className="p-6 border-primary/20 bg-primary/5">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold">Opciones de Generación</h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Configura cómo deseas generar el documento
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
+          {/* Switch + Botón */}
+          <div className="pt-2 border-t border-border/50 space-y-2">
             <div className="flex items-center gap-2">
-              <Label htmlFor="hojaDeRuta" className="text-sm font-medium cursor-pointer">
-                Generar con Hoja de Ruta
-              </Label>
               <Switch
                 id="hojaDeRuta"
                 checked={formData.conHojaDeRuta}
                 onCheckedChange={handleSwitchChange}
               />
+              <Label htmlFor="hojaDeRuta" className="text-xs cursor-pointer select-none">
+                Incluir Hoja de Ruta
+              </Label>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClear}
+                className="text-xs"
+              >
+                Limpiar
+              </Button>
+              <Button
+                onClick={handleGenerateDocument}
+                disabled={!isValid}
+                size="sm"
+                className="flex-1 bg-primary text-xs"
+              >
+                {formData.conHojaDeRuta
+                  ? 'Crear con Hoja de Ruta'
+                  : 'Crear sin Hoja de Ruta'}
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <p className="text-xs text-muted-foreground mb-4">
-          💡 Activa esta opción si deseas que el documento incluya un número de rastreo y hoja de ruta
-        </p>
-
-        <div className="flex gap-3 pt-4">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setFormData({
-                documentType: '',
-                process: '',
-                destinatario: '',
-                cargoDestinatario: '',
-                via: '',
-                cargoVia: '',
-                referencia: '',
-                adjuntos: 0,
-                hojas: 0,
-                conHojaDeRuta: false,
-              });
-              setSelectedRecipients([]);
-            }}
-          >
-            Limpiar Formulario
-          </Button>
-          <Button
-            onClick={handleGenerateDocument}
-            disabled={!formData.documentType || !formData.process || !formData.destinatario || !formData.referencia}
-            className="flex-1 bg-primary"
-          >
-            Generar Documento
-          </Button>
-        </div>
-      </Card>
+      </div>
 
       {/* Recipient Modal */}
       <RecipientModal

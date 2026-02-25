@@ -40,7 +40,7 @@ export function Topbar() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-40 h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-6">
+    <header className="fixed top-0 right-0 left-0 z-50 h-16 bg-background/70 backdrop-blur-md border-b border-border/60 flex items-center justify-between px-4 lg:px-6 transition-all duration-300">
       {/* Lado izquierdo - Logo y nombre */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Toggle móvil */}
