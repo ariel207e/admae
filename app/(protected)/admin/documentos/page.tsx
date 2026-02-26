@@ -21,22 +21,22 @@ import { ROLES } from '@/components/admin/types';
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 const MOCK_DOCS: TipoDocumentoAdmin[] = [
-  { id: 1, nombre: 'Nota',           abreviatura: 'NOT', formaCITE: 'SIGLA-DEP-NOT-###-ANNO', plantilla: 'Plantilla de Nota interna.' },
-  { id: 2, nombre: 'Informe',        abreviatura: 'INF', formaCITE: 'SIGLA-DEP-INF-###-ANNO', plantilla: 'Plantilla de Informe técnico.' },
-  { id: 3, nombre: 'Carta',          abreviatura: 'CRT', formaCITE: 'SIGLA-DEP-CRT-###-ANNO', plantilla: 'Plantilla de Carta oficial.' },
-  { id: 4, nombre: 'Circular',       abreviatura: 'CIR', formaCITE: 'SIGLA-DEP-CIR-###-ANNO', plantilla: 'Plantilla de Circular.' },
-  { id: 5, nombre: 'Memorando',      abreviatura: 'MEM', formaCITE: 'SIGLA-DEP-MEM-###-ANNO', plantilla: 'Plantilla de Memorando.' },
-  { id: 6, nombre: 'Resolución',     abreviatura: 'RES', formaCITE: 'SIGLA-DEP-RES-###-ANNO', plantilla: 'Plantilla de Resolución.' },
-  { id: 7, nombre: 'Certificación',  abreviatura: 'CER', formaCITE: 'SIGLA-DEP-CER-###-ANNO', plantilla: 'Plantilla de Certificación.' },
+  { id: 1, nombre: 'Nota', abreviatura: 'NOT', formaCITE: 'SIGLA-DEP-NOT-###-ANNO', plantilla: 'Plantilla de Nota interna.' },
+  { id: 2, nombre: 'Informe', abreviatura: 'INF', formaCITE: 'SIGLA-DEP-INF-###-ANNO', plantilla: 'Plantilla de Informe técnico.' },
+  { id: 3, nombre: 'Carta', abreviatura: 'CRT', formaCITE: 'SIGLA-DEP-CRT-###-ANNO', plantilla: 'Plantilla de Carta oficial.' },
+  { id: 4, nombre: 'Circular', abreviatura: 'CIR', formaCITE: 'SIGLA-DEP-CIR-###-ANNO', plantilla: 'Plantilla de Circular.' },
+  { id: 5, nombre: 'Memorando', abreviatura: 'MEM', formaCITE: 'SIGLA-DEP-MEM-###-ANNO', plantilla: 'Plantilla de Memorando.' },
+  { id: 6, nombre: 'Resolución', abreviatura: 'RES', formaCITE: 'SIGLA-DEP-RES-###-ANNO', plantilla: 'Plantilla de Resolución.' },
+  { id: 7, nombre: 'Certificación', abreviatura: 'CER', formaCITE: 'SIGLA-DEP-CER-###-ANNO', plantilla: 'Plantilla de Certificación.' },
 ];
 
 const MOCK_ROL_MAP: RolDocumentosMap = {
-  'Administrador':       ['NOT', 'INF', 'CRT', 'CIR', 'MEM', 'RES', 'CER'],
+  'Administrador': ['NOT', 'INF', 'CRT', 'CIR', 'MEM', 'RES', 'CER'],
   'Administrador Local': ['NOT', 'INF', 'CRT', 'CIR', 'MEM', 'RES'],
-  'Funcionario':         ['NOT', 'INF', 'CRT'],
-  'Ventanilla':          ['NOT', 'CRT'],
-  'Secretaria':          ['NOT', 'INF', 'CRT', 'MEM'],
-  'Jefe de Oficina':     ['NOT', 'INF', 'CRT', 'CIR', 'MEM', 'RES'],
+  'Funcionario': ['NOT', 'INF', 'CRT'],
+  'Ventanilla': ['NOT', 'CRT'],
+  'Secretaria': ['NOT', 'INF', 'CRT', 'MEM'],
+  'Jefe de Oficina': ['NOT', 'INF', 'CRT', 'CIR', 'MEM', 'RES'],
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -213,28 +213,30 @@ function RolPermisosSection({
               <thead>
                 <tr className="border-b bg-muted/30">
                   <th className="text-left px-4 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wide w-44">
-                    Rol
+                    Documento
                   </th>
-                  {docs.map((d) => (
-                    <th key={d.id} className="px-3 py-2 text-center">
-                      <div className="text-[10px] font-mono font-semibold text-primary">{d.abreviatura}</div>
-                      <div className="text-[9px] text-muted-foreground truncate max-w-[60px]">{d.nombre}</div>
+                  {ROLES.map((rol) => (
+                    <th key={rol} className="px-3 py-2 text-center">
+                      <div className="text-[10px] font-mono font-semibold text-primary">{rol}</div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {ROLES.map((rol) => {
-                  const asignados = rolMap[rol] ?? [];
+                {docs.map((d) => {
                   return (
-                    <tr key={rol} className="hover:bg-muted/20 transition-colors">
+                    <tr key={d.id} className="hover:bg-muted/20 transition-colors">
                       <td className="px-4 py-2.5">
-                        <span className="text-xs font-medium">{rol}</span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-medium">{d.nombre}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{d.abreviatura}</span>
+                        </div>
                       </td>
-                      {docs.map((d) => {
+                      {ROLES.map((rol) => {
+                        const asignados = rolMap[rol] ?? [];
                         const checked = asignados.includes(d.abreviatura);
                         return (
-                          <td key={d.id} className="px-3 py-2 text-center">
+                          <td key={rol} className="px-3 py-2 text-center">
                             <button
                               type="button"
                               onClick={() => toggle(rol, d.abreviatura)}

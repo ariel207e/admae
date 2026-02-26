@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronDown,
   PanelLeft,
+  KeyRound,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -130,11 +131,16 @@ export function Topbar() {
               <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
                 {user?.nombre?.charAt(0)}
               </div>
-              <div className="hidden sm:flex items-center gap-1">
-                <span className="text-sm font-medium text-foreground">
-                  {user?.nombre}
+              <div className="hidden sm:flex flex-col items-start leading-tight">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm font-bold text-foreground truncate max-w-[200px]">
+                    {user?.nombre} {user?.apellido}
+                  </span>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[200px]">
+                  {user?.cargo}
                 </span>
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               </div>
             </button>
           </DropdownMenuTrigger>
@@ -147,6 +153,12 @@ export function Topbar() {
               <Link href="/cuenta" className="cursor-pointer">
                 <User className="w-4 h-4 mr-2" />
                 Mi Cuenta
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/cambiar-password" className="cursor-pointer">
+                <KeyRound className="w-4 h-4 mr-2" />
+                Actualizar Contraseña
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>

@@ -26,6 +26,8 @@ import {
   History,
   BookOpen,
 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 const menuItems = [
@@ -82,6 +84,7 @@ const menuItems = [
 
 export function Sidebar() {
   const { isOpen, close, isCollapsed } = useSidebar();
+  const { user } = useAuth();
   const pathname = usePathname();
 
   return (

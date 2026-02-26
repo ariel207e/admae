@@ -8,7 +8,16 @@ interface User {
   nombre: string;
   apellido: string;
   rol: string;
+  cargo?: string;
   avatar?: string;
+  nombreUsuario: string;
+  carnet: string;
+  oficina: string;
+  entidad: string;
+  mosca: string;
+  documentosPermitidos: string[];
+  cantidadIngresos: number;
+  ultimoIngreso: string | null;
 }
 
 interface AuthContextType {
@@ -30,7 +39,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        // Asegurar que campos nuevos tengan valores por defecto si el objeto es antiguo
+        const upgradedUser = {
+          ...parsedUser,
+          documentosPermitidos: parsedUser.documentosPermitidos || [],
+          cantidadIngresos: parsedUser.cantidadIngresos || 0,
+          ultimoIngreso: parsedUser.ultimoIngreso || null,
+          mosca: parsedUser.mosca || '',
+          carnet: parsedUser.carnet || '',
+          nombreUsuario: parsedUser.nombreUsuario || parsedUser.email?.split('@')[0] || 'user',
+          oficina: parsedUser.oficina || '',
+          entidad: parsedUser.entidad || '',
+        };
+        setUser(upgradedUser);
       } catch (error) {
         console.error('Error al cargar usuario:', error);
       }
@@ -49,10 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const mockUser: User = {
           id: '1',
           email: 'admin@test.com',
-          nombre: 'Juan',
-          apellido: 'Pérez',
-          rol: 'admin',
+          nombre: 'Juan Luis',
+          apellido: 'Pérez Cervantes',
+          rol: 'Administrador',
+          cargo: 'Director General',
           avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
+          nombreUsuario: 'admin',
+          carnet: '001-1234567-8',
+          oficina: 'Dirección General',
+          entidad: 'Ministerio de Administración Pública',
+          mosca: 'JLPC',
+          documentosPermitidos: ['Nota', 'Informe', 'Carta', 'Circular', 'Memorando'],
+          cantidadIngresos: 156,
+          ultimoIngreso: new Date().toISOString(),
         };
         setUser(mockUser);
         localStorage.setItem('user', JSON.stringify(mockUser));
